@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>English Word Game</title>
+</head>
+<body>
+```html
+    body {
+        font-family: 'Nunito', sans-serif;
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        min-height: 100vh;
+    }
+    
+    .letter-box {
+        width: 50px;
+        height: 50px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        font-weight: bold;
+        margin: 0 4px;
+        transition: all 0.3s ease;
+    }
+    
+    .letter-box.revealed {
+        transform: rotateY(360deg);
+    }
+    
+    .keyboard-btn {
+        width: 40px;
+        height: 40px;
+        margin: 4px;
+        border-radius: 6px;
+        font-weight: bold;
+        transition: all 0.2s;
+    }
+    
+    .keyboard-btn:hover:not(:disabled) {
+        transform: translateY(-2px);
+    }
+    
+    .keyboard-btn:active:not(:disabled) {
+        transform: translateY(1px);
+    }
+    
+    .image-option {
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .image-option:hover {
+        transform: scale(1.05);
+    }
+    
+    .image-option.selected {
+        border: 3px solid #4ade80;
+    }
+    
+    .image-option.wrong {
+        border: 3px solid #f87171;
+    }
+    
+    .difficulty-selector {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+    }
+</style>
+        <div class="difficulty-selector">
+            <select id="difficulty-select" class="bg-white text-indigo-600 px-3 py-1 rounded-lg font-bold">
+                <option value="easy">Easy Words</option>
+                <option value="medium">Medium Words</option>
+                <option value="all">All Words</option>
+            </select>
+        </div>
+    </div>
+    
+    <div class="p-6">
+        <!-- Game Modes -->
+        <div class="flex justify-center mb-6 space-x-2" id="game-modes">
+            <button class="bg-indigo-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-indigo-700 transition" data-mode="guess">Letter Guessing</button>
+            <button class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-bold hover:bg-gray-300 transition" data-mode="meaning">Meaning Matching</button>
+            <button class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-bold hover:bg-gray-300 transition" data-mode="image">Image Matching</button>
+        </div>
+        
+        <!-- Game Area -->
+        <div id="game-area" class="mb-8">
+            <!-- Guess Mode -->
+            <div id="guess-mode" class="block">
+                <div class="mb-6">
+                    <h2 class="text-xl font-bold text-gray-700 mb-2">Hint:</h2>
+                    <p id="word-hint" class="text-gray-600 p-3 bg-gray-100 rounded-lg">A type of fruit</p>
+                </div>
+                
+                <div class="flex justify-center mb-8 flex-wrap" id="word-display">
+                    <!-- Letter boxes will be added here -->
+                </div>
+                
+                <div class="text-center mb-4">
+                    <p class="text-gray-600">Remaining Tries: <span id="remaining-tries" class="font-bold text-indigo-600">6</span></p>
+                </div>
+                
+                <div id="keyboard" class="flex flex-wrap justify-center max-w-md mx-auto">
+                    <!-- Keyboard buttons will be added here -->
+                </div>
+            </div>
+            
+            <!-- Meaning Mode -->
+            <div id="meaning-mode" class="hidden">
+                <div class="mb-6">
+                    <h2 class="text-xl font-bold text-gray-700 mb-2">Word:</h2>
+                    <p id="meaning-word" class="text-indigo-600 text-2xl font-bold p-3 bg-gray-100 rounded-lg text-center">APPLE</p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="meaning-options">
+                    <!-- Meaning options will be added here -->
+                </div>
+            </div>
+            
+            <!-- Image Mode -->
+            <div id="image-mode" class="hidden">
+                <div class="mb-6">
+                    <h2 class="text-xl font-bold text-gray-700 mb-2">Word:</h2>
+                    <p id="image-word" class="text-indigo-600 text-2xl font-bold p-3 bg-gray-100 rounded-lg text-center">APPLE</p>
+                </div>
+                
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4" id="image-options">
+                    <!-- Image options will be added here -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Score and Controls -->
+        <div class="flex justify-between items-center border-t pt-4">
+            <div>
+                <p class="text-gray-600">Score: <span id="score" class="font-bold text-indigo-600">0</span></p>
+            </div>
+            <button id="next-word" class="bg-green-500 text-white px-4 py-2 rounded-lg font-bold hover:bg-green-600 transition">Next Word</button>
+        </div>
+    </div>
+</div>
+
+<!-- Result Modal -->
+<div id="result-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-xl p-6 max-w-md w-full mx-4">
+        <div class="text-center">
+            <div id="result-icon" class="mx-auto mb-4 text-6xl">🎉</div>
+            <h2 id="result-title" class="text-2xl font-bold mb-2">Congratulations!</h2>
+            <p id="result-message" class="text-gray-600 mb-4">Correct answer: APPLE</p>
+            <div class="flex justify-center">
+                <button id="continue-btn" class="bg-indigo-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-indigo-700 transition">Continue</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Basic words (original set)
+    const basicWords = [
+        { word: "APPLE", hint: "A red or green fruit", meaning: "A round fruit with red, yellow, or green skin and firm white flesh", imageDesc: "Red round fruit" },
+        { word: "PENCIL", hint: "A tool used for writing", meaning: "A long, thin wooden instrument with a lead or colored core, used for writing or drawing", imageDesc: "Writing tool" },
+        { word: "BOOK", hint: "A collection of printed pages", meaning: "A written or printed work consisting of pages bound together", imageDesc: "Reading material" },
+        { word: "SUN", hint: "The star at the center of our solar system", meaning: "The star around which the earth orbits", imageDesc: "Yellow bright star" },
+        { word: "SCHOOL", hint: "A place for education", meaning: "An institution for educating children", imageDesc: "Education building" },
+        { word: "OCEAN", hint: "A large body of saltwater", meaning: "A very large expanse of sea", imageDesc: "Large body of water" },
+        { word: "MOUNTAIN", hint: "A large natural elevation of the earth's surface", meaning: "A large natural elevation of the earth's surface, much larger than a hill", imageDesc: "High landform" },
+        { word: "ELEPHANT", hint: "A large mammal with a trunk", meaning: "A very large plant-eating mammal with a long trunk and tusks", imageDesc: "Large gray animal" }
+    ];
+    
+    // Additional simple words from the lists
+    const additionalWords = [
+        { word: "ITEM", hint: "A single article or unit", meaning: "A single article or object", imageDesc: "Single object" },
+        { word: "ISSUE", hint: "A topic or problem for discussion", meaning: "An important topic or problem for debate or discussion", imageDesc: "Problem to solve" },
+        { word: "MEDIA", hint: "Means of mass communication", meaning: "The main means of mass communication", imageDesc: "Communication channels" },
+        { word: "METHOD", hint: "A way of doing something", meaning: "A particular way of doing something", imageDesc: "Procedure" },
+        { word: "MODERN", hint: "Relating to the present time", meaning: "Relating to the present or recent times", imageDesc: "Contemporary style" },
+        { word: "NORMAL", hint: "Conforming to a standard", meaning: "Conforming to a standard; usual, typical, or expected", imageDesc: "Standard situation" },
+        { word: "OBTAIN", hint: "Get or acquire something", meaning: "Get, acquire, or secure something", imageDesc: "Acquiring something" },
+        { word: "OCCUR", hint: "To happen or take place", meaning: "To happen or take place", imageDesc: "Event happening" },
+        { word: "PERIOD", hint: "A length or portion of time", meaning: "A length or portion of time", imageDesc: "Time segment" },
+        { word: "POLICY", hint: "A course of action", meaning: "A course or principle of action adopted by an organization", imageDesc: "Action plan" },
+        { word: "RANGE", hint: "A set of different things", meaning: "A set of different things of the same general type", imageDesc: "Variety of items" },
+        { word: "REGION", hint: "An area of land", meaning: "An area, especially part of a country", imageDesc: "Area on map" },
+        { word: "SOURCE", hint: "A place where something comes from", meaning: "A place, person, or thing from which something originates", imageDesc: "Origin point" },
+        { word: "ACCESS", hint: "The means or opportunity to approach", meaning: "The means or opportunity to enter a place", imageDesc: "Entry point" },
+        { word: "ACTIVITY", hint: "The condition of being active", meaning: "The condition in which things are happening or being done", imageDesc: "People doing things" },
+        { word: "AWARE", hint: "Having knowledge or perception", meaning: "Having knowledge or perception of a situation", imageDesc: "Conscious mind" },
+        { word: "COMMENT", hint: "A verbal or written remark", meaning: "A verbal or written remark expressing an opinion", imageDesc: "Written opinion" },
+        { word: "CONTACT", hint: "The state of touching", meaning: "The state of physical touching or communication with someone", imageDesc: "People connecting" },
+        { word: "CYCLE", hint: "A series of events that repeat", meaning: "A series of events that are regularly repeated in the same order", imageDesc: "Repeating pattern" },
+        { word: "DEBATE", hint: "A formal discussion", meaning: "A formal discussion on a particular topic", imageDesc: "People arguing" },
+        { word: "ENERGY", hint: "Power derived from resources", meaning: "The strength and vitality required for sustained activity", imageDesc: "Power source" },
+        { word: "IMAGE", hint: "A representation of external form", meaning: "A representation of the external form of a person or thing", imageDesc: "Visual representation" },
+        { word: "LAYER", hint: "A sheet or level of material", meaning: "A sheet, quantity, or thickness of material", imageDesc: "Stacked materials" },
+        { word: "LOGIC", hint: "Reasoning conducted according to strict principles", meaning: "Reasoning conducted according to strict principles of validity", imageDesc: "Rational thinking" },
+        { word: "NETWORK", hint: "A group of interconnected things", meaning: "A group or system of interconnected people or things", imageDesc: "Connected points" },
+        { word: "OPTION", hint: "A thing that is or may be chosen", meaning: "A thing that is or may be chosen", imageDesc: "Choice selection" },
+        { word: "TASK", hint: "A piece of work to be done", meaning: "A piece of work to be done or undertaken", imageDesc: "Work assignment" },
+        { word: "TREND", hint: "A general direction in which something is developing", meaning: "A general direction in which something is developing or changing", imageDesc: "Direction of change" },
+        { word: "ADULT", hint: "A person who is fully grown", meaning: "A person who is fully grown or developed", imageDesc: "Grown person" },
+        { word: "AID", hint: "Help or support", meaning: "Help, typically of a practical nature", imageDesc: "Helping hand" },
+        { word: "BRIEF", hint: "Of short duration", meaning: "Lasting for a short time", imageDesc: "Short moment" },
+        { word: "COUPLE", hint: "Two people or things", meaning: "Two people or things of the same sort considered together", imageDesc: "Two items" },
+        { word: "DENY", hint: "State that one refuses to admit", meaning: "State that one refuses to admit the truth or existence of", imageDesc: "Refusing truth" },
+        { word: "MAJOR", hint: "Greater in importance or rank", meaning: "Greater in importance, size, or rank", imageDesc: "Important element" },
+        { word: "LEGAL", hint: "Permitted by law", meaning: "Permitted by law; lawful", imageDesc: "Law-related" },
+        { word: "INVOLVE", hint: "Include or affect", meaning: "Include or contain as a necessary part", imageDesc: "Including something" },
+        { word: "INJURY", hint: "Harm or damage", meaning: "An instance of being injured", imageDesc: "Physical harm" },
+        { word: "RECENT", hint: "Having happened not long ago", meaning: "Having happened, begun, or been done not long ago", imageDesc: "New occurrence" },
+        { word: "SIMILAR", hint: "Resembling without being identical", meaning: "Resembling without being identical", imageDesc: "Alike objects" },
+        { word: "SUPPLY", hint: "Make available for use", meaning: "Make something needed available to someone", imageDesc: "Available resources" },
+        { word: "AUTHOR", hint: "A writer of a book or article", meaning: "A writer of a book, article, or document", imageDesc: "Book writer" },
+        { word: "CIVIL", hint: "Relating to ordinary citizens", meaning: "Relating to ordinary citizens and their concerns", imageDesc: "Citizen matters" },
+        { word: "GRADE", hint: "A particular level of rank or quality", meaning: "A particular level of quality, size, importance", imageDesc: "Quality level" },
+        { word: "GLOBAL", hint: "Relating to the whole world", meaning: "Relating to the whole world; worldwide", imageDesc: "Worldwide scope" },
+        { word: "ADJUST", hint: "Alter or move something slightly", meaning: "Alter or move something slightly to achieve the desired fit", imageDesc: "Making changes" },
+        { word: "VOLUME", hint: "The amount of space occupied", meaning: "The amount of space that a substance or object occupies", imageDesc: "Space occupied" },
+        { word: "FUNDS", hint: "A sum of money", meaning: "A sum of money saved or made available for a particular purpose", imageDesc: "Money saved" },
+        { word: "ENSURE", hint: "Make certain that something happens", meaning: "Make certain that something will occur or be the case", imageDesc: "Guaranteeing" },
+        { word: "ENABLE", hint: "Make it possible for someone to do something", meaning: "Make it possible for someone to do something", imageDesc: "Making possible" },
+        { word: "EMERGE", hint: "Move out of or away from something", meaning: "Move out of or away from something and become visible", imageDesc: "Coming into view" },
+        { word: "REMOVE", hint: "Take away or off", meaning: "Take something away or off from the position occupied", imageDesc: "Taking away" },
+        { word: "SECTOR", hint: "An area or portion", meaning: "An area or portion that is distinct from others", imageDesc: "Distinct area" },
+        { word: "THREAT", hint: "A statement of an intention to inflict harm", meaning: "A statement of an intention to inflict pain, injury, or harm", imageDesc: "Danger warning" },
+        { word: "THEORY", hint: "A supposition or system of ideas", meaning: "A supposition or system of ideas explaining something", imageDesc: "Explanatory idea" },
+        { word: "PROCESS", hint: "A series of actions", meaning: "A series of actions to achieve a particular result", imageDesc: "Step sequence" },
+        { word: "REQUIRE", hint: "Need for a particular purpose", meaning: "Need for a particular purpose or reason", imageDesc: "Necessary need" },
+        { word: "INITIAL", hint: "Existing or occurring at the beginning", meaning: "Existing or occurring at the beginning", imageDesc: "First instance" },
+        { word: "MENTAL", hint: "Relating to the mind", meaning: "Relating to the mind or involving the process of thinking", imageDesc: "Mind-related" },
+        { word: "PRECISE", hint: "Marked by exactness and accuracy", meaning: "Marked by exactness and accuracy of expression or detail", imageDesc: "Exact detail" },
+        { word: "PROJECT", hint: "An individual or collaborative enterprise", meaning: "An individual or collaborative enterprise planned to achieve a goal", imageDesc: "Planned work" },
+        { word: "PROMOTE", hint: "Support or actively encourage", meaning: "Support or actively encourage a cause, venture, or aim", imageDesc: "Supporting cause" },
+        { word: "PREDICT", hint: "Say or estimate that something will happen", meaning: "Say or estimate that a specified thing will happen in the future", imageDesc: "Future forecast" },
+        { word: "OUTCOME", hint: "The way a thing turns out", meaning: "The way a thing turns out; a consequence", imageDesc: "Final result" },
+        { word: "OVERALL", hint: "Taking everything into account", meaning: "Taking everything into account; in general", imageDesc: "Complete view" },
+        { word: "MEDICAL", hint: "Relating to the treatment of illness", meaning: "Relating to the science or practice of medicine", imageDesc: "Health treatment" },
+        { word: "MAXIMUM", hint: "The greatest amount possible", meaning: "The greatest amount, value, or degree possible", imageDesc: "Highest level" },
+        { word: "LOCATION", hint: "A particular place or position", meaning: "A particular place or position", imageDesc: "Specific place" },
+        { word: "IMPLY", hint: "Indicate the truth or existence of something", meaning: "Indicate the truth or existence of something by suggestion", imageDesc: "Suggesting meaning" },
+        { word: "EXPERT", hint: "A person with special knowledge", meaning: "A person with comprehensive knowledge or skill in a field", imageDesc: "Skilled person" },
+        { word: "EXCEED", hint: "Be greater than", meaning: "Be greater in number or size than", imageDesc: "Going beyond" },
+        { word: "DOMAIN", hint: "An area of territory owned or controlled", meaning: "An area of territory owned or controlled by a ruler or government", imageDesc: "Controlled area" },
+        { word: "DIVERSE", hint: "Showing a great deal of variety", meaning: "Showing a great deal of variety; very different", imageDesc: "Various types" },
+        { word: "CAPABLE", hint: "Having the ability or quality necessary", meaning: "Having the ability, fitness, or quality necessary to do something", imageDesc: "Able person" },
+        { word: "ANNUAL", hint: "Occurring once every year", meaning: "Occurring once every year", imageDesc: "Yearly event" },
+        { word: "CORE", hint: "The central or most important part", meaning: "The central or most important part of something", imageDesc: "Central part" },
+        { word: "DECLINE", hint: "Become smaller, fewer, or less", meaning: "Become smaller, fewer, or less; decrease", imageDesc: "Downward trend" },
+        { word: "DESPITE", hint: "Without being affected by", meaning: "Without being prevented by; in spite of", imageDesc: "Regardless of" },
+        { word: "FEES", hint: "Payments made for services", meaning: "Payments made to a professional person or organization", imageDesc: "Service payment" },
+        { word: "GENDER", hint: "The state of being male or female", meaning: "The state of being male or female", imageDesc: "Male or female" },
+        { word: "INDEX", hint: "An indicator or measure of something", meaning: "An indicator, sign, or measure of something", imageDesc: "Reference guide" },
+        { word: "REACT", hint: "Respond to a stimulus", meaning: "Respond or behave in a particular way in response to something", imageDesc: "Response action" },
+        { word: "STABLE", hint: "Not likely to change or fail", meaning: "Not likely to change or fail; firmly established", imageDesc: "Steady state" },
+        { word: "SUMMARY", hint: "A brief statement of the main points", meaning: "A brief statement or account of the main points", imageDesc: "Brief overview" },
+        { word: "TECHNIQUE", hint: "A way of carrying out a task", meaning: "A way of carrying out a particular task", imageDesc: "Skilled method" },
+        { word: "VERSION", hint: "A particular form of something", meaning: "A particular form of something differing from others", imageDesc: "Specific form" },
+        { word: "ATTITUDE", hint: "A settled way of thinking", meaning: "A settled way of thinking or feeling about something", imageDesc: "Mental position" },
+        { word: "CAPACITY", hint: "The maximum amount that can be contained", meaning: "The maximum amount that something can contain", imageDesc: "Maximum volume" },
+        { word: "CONSTANT", hint: "Occurring continuously", meaning: "Occurring continuously over a period of time", imageDesc: "Continuous state" },
+        { word: "EMPHASIS", hint: "Special importance or significance", meaning: "Special importance, value, or prominence given to something", imageDesc: "Strong focus" },
+        { word: "EXTERNAL", hint: "Belonging to or forming the outer surface", meaning: "Belonging to or forming the outer surface or structure", imageDesc: "Outside part" },
+        { word: "INSTANCE", hint: "A particular example", meaning: "A particular example or single occurrence of something", imageDesc: "Specific example" },
+        { word: "POSITIVE", hint: "Constructive, optimistic, or confident", meaning: "Constructive, optimistic, or confident", imageDesc: "Good attitude" },
+        { word: "SOLUTION", hint: "A means of solving a problem", meaning: "A means of solving a problem or dealing with a difficult situation", imageDesc: "Problem answer" },
+        { word: "SPECIFIC", hint: "Clearly defined or identified", meaning: "Clearly defined or identified", imageDesc: "Exact detail" },
+        { word: "STRATEGY", hint: "A plan of action", meaning: "A plan of action designed to achieve a long-term or overall aim", imageDesc: "Action plan" },
+        { word: "STRUCTURE", hint: "The arrangement of parts", meaning: "The arrangement of and relations between the parts of something complex", imageDesc: "Organized system" },
+        { word: "TRANSPORT", hint: "Take or carry from one place to another", meaning: "Take or carry people or goods from one place to another", imageDesc: "Moving goods" }
+    ];
+    
+    // Combine all words
+    const allWords = [...basicWords, ...additionalWords];
+    
+    // SVG images for the game
+    const svgImages = {
+        // Original SVGs
+        "APPLE": `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="55" r="35" fill="#e74c3c"/><path d="M50 20 L55 35 L45 35 Z" fill="#27ae60"/><path d="M50 20 C40 25, 30 15, 25 25" stroke="#27ae60" stroke-width="2" fill="none"/></svg>`,
+        "PENCIL": `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M30 80 L70 20 L80 25 L40 85 Z" fill="#f1c40f"/><path d="M30 80 L25 90 L35 85 Z" fill="#34495e"/><rect x="70" y="20" width="10" height="5" fill="#e74c3c"/></svg>`,
+        "BOOK": `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="20" y="30" width="60" height="40" fill="#3498db"/><rect x="25" y="35" width="50" height="30" fill="#ecf0f1"/><line x1="35" y1="45" x2="65" y2="45" stroke="#34495e" stroke-width="2"/><line x1="35" y1="55" x2="55" y2="55" stroke="#34495e" stroke-width="2"/></svg>`,
+        "SUN": `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="25" fill="#f39c12"/><path d="M50 15 L50 5 M50 95 L50 85 M15 50 L5 50 M95 50 L85 50 M26 26 L19 19 M74 26 L81 19 M26 74 L19 81 M74 74 L81 81" stroke="#f39c12" stroke-width="3"/></svg>`,
+        "SCHOOL": `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="20" y="40" width="60" height="40" fill="#e74c3c"/><polygon points="50,20 80,40 20,40" fill="#34495e"/><rect x="35" y="50" width="10" height="15" fill="#ecf0f1"/><rect x="55" y="50" width="10" height="15" fill="#ecf0f1"/><rect x="40" y="70" width="20" height="10" fill="#ecf0f1"/></svg>`,
+        "OCEAN": `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="40" width="100" height="60" fill="#3498db"/><path d="M0 50 Q 20 40, 40 50 Q 60 60, 80 50 Q 100 40, 120 50 L 120 100 L 0 100 Z" fill="#2980b9"/><circle cx="80" cy="30" r="10" fill="#f1c40f"/></svg>`,
+        "MOUNTAIN": `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><polygon points="10,80 40,20 70,80" fill="#7f8c8d"/><polygon points="40,80 70,30 100,80" fill="#95a5a6"/><polygon points="70,80 80,70 90,80" fill="#7f8c8d"/><rect x="0" y="80" width="100" height="20" fill="#27ae60"/></svg>`,
+        "ELEPHANT": `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><ellipse cx="50" cy="60" rx="30" ry="20" fill="#7f8c8d"/><circle cx="70" cy="50" r="15" fill="#7f8c8d"/><path d="M70 40 Q 90 30, 85 50" stroke="#7f8c8d" stroke-width="5" fill="none"/><ellipse cx="75" cy="45" rx="2" ry="2" fill="black"/><path d="M50 80 L50 95 M60 80 L60 95" stroke="#7f8c8d" stroke-width="8" fill="none"/><path d="M85 45 L95 35" stroke="#7f8c8d" stroke-width="3" fill="none"/></svg>`,
+        
+        // Generic SVGs for additional words
+        "ITEM": `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="25" y="25" width="50" height="50" fill="#3498db" rx="5" ry="5"/><circle cx="50" cy="50" r="15" fill="#ecf0f1"/></svg>`,
+        "ISSUE": `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="30" fill="#e74c3c"/><text x="50" y="60" font-size="40" text-anchor="middle" fill="white">?</text></svg>`,
+        "MEDIA": `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="20" y="30" width="60" height="40" fill="#34495e" rx="5" ry="5"/><polygon points="35,40 65,50 35,60" fill="#ecf0f1"/></svg>`,
+        "METHOD": `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="20" y="30" width="60" height="40" fill="#3498db"/><line x1="30" y1="40" x2="70" y2="40" stroke="#ecf0f1" stroke-width="3"/><line x1="30" y1="50" x2="70" y2="50" stroke="#ecf0f1" stroke-width="3"/><line x1="30" y1="60" x2="70" y2="60" stroke="#ecf0f1" stroke-width="3"/></svg>`,
+        "MODERN": `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="20" y="20" width="60" height="60" fill="#9b59b6"/><rect x="30" y="30" width="40" height="40" fill="#ecf0f1"/><circle cx="50" cy="50" r="10" fill="#9b59b6"/></svg>`,
+        "NORMAL": `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="30" fill="#2ecc71"/><circle cx="50" cy="50" r="15" fill="#ecf0f1"/></svg>`,
+        "OBTAIN": `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="30" fill="#f1c40f"/><path d="M35 50 L50 65 L70 35" stroke="#ecf0f1" stroke-width="5" fill="none"/></svg>`,
+        "OCCUR": `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="30" fill="#e67e22"/><text x="50" y="60" font-size="40" text-anchor="middle" fill="white">!</text></svg>`,
+        "PERIOD": `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="30" fill="#3498db"/><rect x="35" y="45" width="30" height="10" fill="#ecf0f1"/></svg>`,
+        "POLICY": `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="25" y="25" width="50" height="60" fill="#34495e"/><rect x="35" y="35" width="30" height="5" fill="#ecf0f1"/><rect x="35" y="45" width="30" height="5" fill="#ecf0f1"/><rect x="35" y="55" width="30" height="5" fill="#ecf0f1"/><rect x="35" y="65" width="30" height="5" fill="#ecf0f1"/></svg>`
+    };
+    
+    // Generate generic SVGs for words without specific images
+    function generateGenericSvg(word) {
+        const colors = ["#3498db", "#e74c3c", "#2ecc71", "#f39c12", "#9b59b6", "#1abc9c", "#34495e", "#e67e22"];
+        const randomColor = colors[Math.floor(Math.random() * colors.length)];
+        
+        return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <rect x="10" y="30" width="80" height="40" fill="${randomColor}" rx="5" ry="5"/>
+            <text x="50" y="55" font-size="14" text-anchor="middle" fill="white" font-family="Arial, sans-serif">${word.substring(0, 1)}</text>
+        </svg>`;
+    }
+    
+    // Game variables
+    let currentMode = "guess";
+    let currentWordIndex = 0;
+    let currentWord = "";
+    let guessedLetters = [];
+    let remainingTries = 6;
+    let score = 0;
+    let currentWordList = basicWords;
+    
+    // DOM elements
+    const gameModesEl = document.getElementById("game-modes");
+    const guessModeEl = document.getElementById("guess-mode");
+    const meaningModeEl = document.getElementById("meaning-mode");
+    const imageModeEl = document.getElementById("image-mode");
+    const wordDisplayEl = document.getElementById("word-display");
+    const wordHintEl = document.getElementById("word-hint");
+    const remainingTriesEl = document.getElementById("remaining-tries");
+    const keyboardEl = document.getElementById("keyboard");
+    const meaningWordEl = document.getElementById("meaning-word");
+    const meaningOptionsEl = document.getElementById("meaning-options");
+    const imageWordEl = document.getElementById("image-word");
+    const imageOptionsEl = document.getElementById("image-options");
+    const scoreEl = document.getElementById("score");
+    const nextWordBtn = document.getElementById("next-word");
+    const resultModalEl = document.getElementById("result-modal");
+    const resultIconEl = document.getElementById("result-icon");
+    const resultTitleEl = document.getElementById("result-title");
+    const resultMessageEl = document.getElementById("result-message");
+    const continueBtn = document.getElementById("continue-btn");
+    const difficultySelectEl = document.getElementById("difficulty-select");
+    
+    // Initialize game
+    function initGame() {
+        // Set up difficulty selector
+        difficultySelectEl.addEventListener("change", changeDifficulty);
+        
+        // Set up game mode buttons
+        gameModesEl.querySelectorAll("button").forEach(btn => {
+            btn.addEventListener("click", () => {
+                changeGameMode(btn.dataset.mode);
+            });
+        });
+        
+        // Set up next word button
+        nextWordBtn.addEventListener("click", nextWord);
+        
+        // Set up continue button
+        continueBtn.addEventListener("click", () => {
+            resultModalEl.classList.add("hidden");
+        });
+        
+        // Start with first word
+        changeDifficulty();
+    }
+    
+    // Change difficulty
+    function changeDifficulty() {
+        const difficulty = difficultySelectEl.value;
+        
+        if (difficulty === "easy") {
+            currentWordList = basicWords;
+        } else if (difficulty === "medium") {
+            currentWordList = additionalWords;
+        } else {
+            currentWordList = allWords;
+        }
+        
+        // Shuffle words
+        shuffleArray(currentWordList);
+        currentWordIndex = 0;
+        score = 0;
+        scoreEl.textContent = score;
+        
+        // Load word
+        loadWord();
+    }
+    
+    // Change game mode
+    function changeGameMode(mode) {
+        currentMode = mode;
+        
+        // Update mode buttons
+        gameModesEl.querySelectorAll("button").forEach(btn => {
+            if (btn.dataset.mode === mode) {
+                btn.classList.remove("bg-gray-200", "text-gray-700");
+                btn.classList.add("bg-indigo-600", "text-white");
+            } else {
+                btn.classList.remove("bg-indigo-600", "text-white");
+                btn.classList.add("bg-gray-200", "text-gray-700");
+            }
+        });
+        
+        // Show appropriate game mode
+        guessModeEl.classList.add("hidden");
+        meaningModeEl.classList.add("hidden");
+        imageModeEl.classList.add("hidden");
+        
+        if (mode === "guess") {
+            guessModeEl.classList.remove("hidden");
+        } else if (mode === "meaning") {
+            meaningModeEl.classList.remove("hidden");
+        } else if (mode === "image") {
+            imageModeEl.classList.remove("hidden");
+        }
+        
+        // Load word for the current mode
+        loadWord();
+    }
+    
+    // Load current word
+    function loadWord() {
+        currentWord = currentWordList[currentWordIndex].word;
+        
+        if (currentMode === "guess") {
+            // Reset guessing game
+            guessedLetters = [];
+            remainingTries = 6;
+            remainingTriesEl.textContent = remainingTries;
+            
+            // Set hint
+            wordHintEl.textContent = currentWordList[currentWordIndex].hint;
+            
+            // Create word display
+            createWordDisplay();
+            
+            // Create keyboard
+            createKeyboard();
+        } else if (currentMode === "meaning") {
+            // Set word
+            meaningWordEl.textContent = currentWord;
+            
+            // Create meaning options
+            createMeaningOptions();
+        } else if (currentMode === "image") {
+            // Set word
+            imageWordEl.textContent = currentWord;
+            
+            // Create image options
+            createImageOptions();
+        }
+    }
+    
+    // Create word display for guessing mode
+    function createWordDisplay() {
+        wordDisplayEl.innerHTML = "";
+        
+        for (let i = 0; i < currentWord.length; i++) {
+            const letterBox = document.createElement("div");
+            letterBox.classList.add("letter-box", "bg-gray-200", "text-gray-700");
+            
+            if (guessedLetters.includes(currentWord[i])) {
+                letterBox.textContent = currentWord[i];
+                letterBox.classList.add("revealed", "bg-indigo-100");
+            }
+            
+            wordDisplayEl.appendChild(letterBox);
+        }
+    }
+    
+    // Create keyboard for guessing mode
+    function createKeyboard() {
+        keyboardEl.innerHTML = "";
+        const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        
+        for (let i = 0; i < letters.length; i++) {
+            const letter = letters[i];
+            const button = document.createElement("button");
+            button.classList.add("keyboard-btn");
+            
+            if (guessedLetters.includes(letter)) {
+                button.disabled = true;
+                button.classList.add("bg-gray-300", "text-gray-500");
+            } else {
+                button.classList.add("bg-indigo-100", "text-indigo-700", "hover:bg-indigo-200");
+            }
+            
+            button.textContent = letter;
+            button.addEventListener("click", () => guessLetter(letter));
+            keyboardEl.appendChild(button);
+        }
+    }
+    
+    // Handle letter guess
+    function guessLetter(letter) {
+        if (guessedLetters.includes(letter)) return;
+        
+        guessedLetters.push(letter);
+        
+        if (currentWord.includes(letter)) {
+            // Correct guess
+            createWordDisplay();
+            
+            // Check if word is complete
+            if (isWordComplete()) {
+                showResult(true);
+                score += 10;
+                scoreEl.textContent = score;
+            }
+        } else {
+            // Wrong guess
+            remainingTries--;
+            remainingTriesEl.textContent = remainingTries;
+            
+            if (remainingTries <= 0) {
+                // Game over
+                showResult(false);
+            }
+        }
+        
+        // Update keyboard
+        createKeyboard();
+    }
+    
+    // Check if word is completely guessed
+    function isWordComplete() {
+        for (let letter of currentWord) {
+            if (!guessedLetters.includes(letter)) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    // Create meaning options for meaning mode
+    function createMeaningOptions() {
+        meaningOptionsEl.innerHTML = "";
+        
+        // Get correct meaning and 3 random meanings
+        const correctMeaning = currentWordList[currentWordIndex].meaning;
+        const options = [correctMeaning];
+        
+        // Add random meanings
+        while (options.length < 4) {
+            const randomIndex = Math.floor(Math.random() * currentWordList.length);
+            if (randomIndex !== currentWordIndex && !options.includes(currentWordList[randomIndex].meaning)) {
+                options.push(currentWordList[randomIndex].meaning);
+            }
+        }
+        
+        // Shuffle options
+        shuffleArray(options);
+        
+        // Create option buttons
+        options.forEach(option => {
+            const button = document.createElement("button");
+            button.classList.add("p-4", "bg-indigo-100", "text-gray-700", "rounded-lg", "hover:bg-indigo-200", "transition");
+            button.textContent = option;
+            
+            button.addEventListener("click", () => {
+                const isCorrect = option === correctMeaning;
+                
+                if (isCorrect) {
+                    button.classList.remove("bg-indigo-100");
+                    button.classList.add("bg-green-200", "border-2", "border-green-500");
+                    score += 10;
+                    scoreEl.textContent = score;
+                    showResult(true);
+                } else {
+                    button.classList.remove("bg-indigo-100");
+                    button.classList.add("bg-red-200", "border-2", "border-red-500");
+                    showResult(false);
+                }
+                
+                // Disable all buttons
+                meaningOptionsEl.querySelectorAll("button").forEach(btn => {
+                    btn.disabled = true;
+                });
+            });
+            
+            meaningOptionsEl.appendChild(button);
+        });
+    }
+    
+    // Create image options for image mode
+    function createImageOptions() {
+        imageOptionsEl.innerHTML = "";
+        
+        // Get correct image and 3 random images
+        const correctWord = currentWord;
+        const options = [correctWord];
+        
+        // Add random words
+        while (options.length < 6) {
+            const randomIndex = Math.floor(Math.random() * currentWordList.length);
+            if (!options.includes(currentWordList[randomIndex].word)) {
+                options.push(currentWordList[randomIndex].word);
+            }
+        }
+        
+        // Shuffle options
+        shuffleArray(options);
+        
+        // Create image options
+        options.forEach(option => {
+            const imageContainer = document.createElement("div");
+            imageContainer.classList.add("image-option", "bg-white", "p-3", "rounded-lg", "shadow", "flex", "flex-col", "items-center");
+            
+            // Add SVG image
+            if (svgImages[option]) {
+                imageContainer.innerHTML = svgImages[option];
+            } else {
+                imageContainer.innerHTML = generateGenericSvg(option);
+            }
+            
+            // Add description
+            const desc = document.createElement("p");
+            desc.classList.add("mt-2", "text-center", "text-gray-600", "text-sm");
+            desc.textContent = currentWordList.find(w => w.word === option).imageDesc;
+            imageContainer.appendChild(desc);
+            
+            imageContainer.addEventListener("click", () => {
+                const isCorrect = option === correctWord;
+                
+                if (isCorrect) {
+                    imageContainer.classList.add("selected");
+                    score += 10;
+                    scoreEl.textContent = score;
+                    showResult(true);
+                } else {
+                    imageContainer.classList.add("wrong");
+                    showResult(false);
+                }
+                
+                // Disable all options
+                imageOptionsEl.querySelectorAll(".image-option").forEach(opt => {
+                    opt.style.pointerEvents = "none";
+                });
+            });
+            
+            imageOptionsEl.appendChild(imageContainer);
+        });
+    }
+    
+    // Show result modal
+    function showResult(isSuccess) {
+        if (isSuccess) {
+            resultIconEl.textContent = "🎉";
+            resultTitleEl.textContent = "Congratulations!";
+            resultMessageEl.textContent = `Correct answer: ${currentWord}`;
+        } else {
+            resultIconEl.textContent = "😢";
+            resultTitleEl.textContent = "Sorry!";
+            resultMessageEl.textContent = `Correct answer: ${currentWord}`;
+        }
+        
+        resultModalEl.classList.remove("hidden");
+    }
+    
+    // Move to next word
+    function nextWord() {
+        currentWordIndex = (currentWordIndex + 1) % currentWordList.length;
+        loadWord();
+    }
+    
+    // Utility function to shuffle array
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+    }
+    
+    // Start the game
+    initGame();
+</script>
+</body>
+</html>
